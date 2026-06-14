@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-panel-frontend
+  labels:
+    app: admin-panel-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: admin-panel-frontend
+  template:
+    metadata:
+      labels:
+        app: admin-panel-frontend
+    spec:
+      # Esto permite entrar a Docker Hub privado
+      imagePullSecrets:
+      - name: admin-panel-registry-secret
+      containers:
+      - name: frontend
+        
+        image: sergiogg06/admin-panel-frontend:105
+        ports:
+        - containerPort: 3033
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
