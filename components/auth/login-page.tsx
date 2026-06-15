@@ -19,40 +19,30 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
     try {
-      // 👈 Llamada REAL a tu Gateway
       const response = await apiClient.post('/gestion/auth/login', {
         email,
         password
       });
 
-      // Si el login es exitoso, guardamos la llave en la caja fuerte del navegador
-      if (response.data && response.data.access_token) {
-        localStorage.setItem('tito_token', response.data.access_token);
-      } else if (response.data && response.data.token) {
-        // Por si acaso tu backend sí usa 'token'
-        localStorage.setItem('tito_token', response.data.token);
+      if (response.data && (response.data.access_token || response.data.token)) {
+        localStorage.setItem('tito_token', response.data.access_token || response.data.token);
+        setIsLoading(false);
+        onLogin();
       }
-
-      // Opcional: Guardar datos del usuario
-      // localStorage.setItem('tito_user', JSON.stringify(response.data.user));
-
+    } catch (err: any) { // <--- Aquí es donde Next.js se quejaba
       setIsLoading(false);
-      onLogin(); // Le da paso al Dashboard
+      if (err.response?.status === 401) {
+        setError("Credenciales incorrectas. No te reconozco.");
+      } else {
+        setError("El servidor está apagado o inaccesible.");
+      }
     }
-    } catch (err: any) {
-    setIsLoading(false);
-    // Capturamos tu glorioso 401 Unauthorized del backend
-    if (err.response?.status === 401) {
-      setError("Credenciales incorrectas. No te reconozco.");
-    } else {
-      setError("El servidor está apagado o inaccesible.");
-    }
-  }
+  };
 }
 
 return (
